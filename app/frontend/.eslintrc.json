@@ -1,0 +1,39 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "react-hooks", "import"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "env": {
+    "es2021": true,
+    "browser": true,
+    "jest": true,
+    "node": true
+  },
+  "rules": {
+    // コストパフォマンスが悪いため
+    "react/prop-types": 0,
+    // import Reactする必要がないため
+    "react/react-in-jsx-scope": 0,
+    // 実装した型にしてもらえれば十分であるため
+    "@typescript-eslint/explicit-module-boundary-types": 0,
+    // await忘れ対策
+    "require-await": "error",
+    // anyな型を受け取る関数が存在するため
+    "@typescript-eslint/no-explicit-any": 0,
+    // mock関数で利用するため
+    "@typescript-eslint/no-empty-function": "off",
+    // hook関連のバグを防ぐため
+    "react-hooks/rules-of-hooks": "error",
+    // hook関連のバグを防ぐため
+    "react-hooks/exhaustive-deps": "warn"
+  }
+}

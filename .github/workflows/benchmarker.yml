@@ -1,0 +1,76 @@
+name: k6
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/k6.yml"
+      - "benchmarker/**"
+  pull_request:
+    paths:
+      - ".github/workflows/k6.yml"
+      - "benchmarker/**"
+  workflow_dispatch:
+defaults:
+  run:
+    working-directory: benchmarker
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+
+      - uses: bahmutov/npm-install@v1
+        with:
+          working-directory: benchmarker
+
+      - name: type check
+        run: |
+          yarn type-check
+
+      - name: eslint
+        run: |
+          yarn lint
+
+      - name: prettier
+        run: |
+          yarn format
+  benchmarker:
+    name: Run e2e test and scoring script
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Create init data
+        env:
+          DOCKER_BUILDKIT: 1
+        run: |
+          cd ../app/mysql/dummy_data && ./create_csv.sh
+      - name: Docker compose up
+        env:
+          COMPOSE_DOCKER_CLI_BUILD: 1
+        run: |
+          cd ../app && ./restart_container.sh
+      - name: Wait for MySQL load data
+        run: |
+          while :
+            do
+              docker logs mysql 2>&1 | grep -q "MySQL init process done." && break
+              sleep 1
+            done
+      - name: e2e
+        env:
+          DOCKER_BUILDKIT: 1
+        run: |
+          ./e2e.sh
+      - name: k6 and scoring
+        env:
+          DOCKER_BUILDKIT: 1
+        run: |
+          ./run_k6_and_score.sh

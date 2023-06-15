@@ -1,0 +1,593 @@
+openapi: 3.0.0
+info:
+  title: Talent Fuse API 仕様書
+  description: |
+    42時間耐久 "Tuning the  backend" Contest 2023で使用するタレントマネジメントシステム、「Talent Fuse」の API 仕様書  
+    リポジトリ: https://github.com/DreamArts/42HoursTuning2023
+  version: 1.0.0
+paths:
+  /api/v1/session:
+    post:
+      tags:
+        - session
+      summary: ログイン
+      description: |
+        ログインを実行します。  
+        セッションが新規作成された場合はステータスコード201を返却します。  
+        既にログイン済みの場合、既存のセッションを継続して使用し、ステータスコード200を返却します。  
+        ログインに成功した場合は、セッションにSESSION_IDクッキーがセットされます。  
+        戻り値として、ログインしたユーザーのセッション情報を返却します。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInfo"
+      security: []
+      responses:
+        "200":
+          description: Success
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: "SESSION_ID=ebe93138-d132-f65c-d12c-f52935027f9a; Path=/; HttpOnly"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "201":
+          description: Success
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: "SESSION_ID=ebe93138-d132-f65c-d12c-f52935027f9a; Path=/; HttpOnly"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - session
+      summary: ログアウト
+      description: ログアウトを実行します。
+      responses:
+        "204":
+          description: Success
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/users/user-icon/{userIconId}:
+    get:
+      tags:
+        - users
+      summary: ユーザーアイコン画像の取得
+      description: 指定したユーザーアイコンIDのアイコン画像を500px x 500pxのサイズで返します。
+      parameters:
+        - name: userId
+          in: path
+          description: ユーザーのID
+          required: true
+          schema:
+            $ref: "#/components/schemas/uuid"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileData"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/users:
+    get:
+      tags:
+        - users
+      summary: ユーザーの一覧取得
+      description: ユーザーの一覧を返します。ユーザーは入社日、よみがなの昇順でソートされます。
+      parameters:
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/limit"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/users/search:
+    get:
+      tags:
+        - users
+      summary: ユーザーの検索
+      description: 指定したキーワードが、指定したターゲット項目に含まれるユーザーを返します。ターゲットは複数選択可能です。ターゲットの指定がない場合、全項目に対する検索となります。ユーザーは入社日、よみがなの昇順でソートされます。
+      parameters:
+        - name: q
+          in: query
+          description: 検索したいキーワード
+          required: true
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 50
+            example: "キーワード"
+        - name: target
+          in: query
+          description: 検索対象としたい項目
+          required: false
+          schema:
+            type: string
+            enum:
+              - userName
+              - kana
+              - mail
+              - department
+              - role
+              - office
+              - skill
+              - goal
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/limit"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/users/login-user:
+    get:
+      tags:
+        - users
+      summary: ログインユーザーの取得
+      description: SESSION_IDクッキーにセットされたセッション情報を使ってログインユーザーを返します。
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/match-groups:
+    post:
+      tags:
+        - match-groups
+      summary: マッチグループの作成
+      description: 指定した条件でログインユーザーが参加するマッチグループを作成します。どの条件もANDでフィルタされます。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchGroupForCreate"
+      responses:
+        "201":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchGroupDetail"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/match-groups/members/{userId}:
+    get:
+      tags:
+        - match-groups
+      summary: 参加中のマッチグループの一覧取得
+      description: 指定したユーザーが参加中のマッチグループ一覧を返します。マッチグループはステータスの降順 (openが先)・作成日の降順・マッチグループ名の昇順でソートされます。
+      parameters:
+        - name: userId
+          in: path
+          description: ユーザーのID
+          required: true
+          schema:
+            $ref: "#/components/schemas/uuid"
+        - name: status
+          in: query
+          description: ステータスがopenなマッチグループのみを返す
+          required: false
+          schema:
+            type: string
+            enum:
+              - open
+              - all
+            description: |
+              - open: マッチグループのステータスがopenなマッチグループのみを返す
+              - all: 指定したユーザーが参加中の全てのマッチグループを返す
+            default: all
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/limit"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MatchGroup"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  parameters:
+    offset:
+      name: offset
+      in: query
+      description: "paging offset: 何件目から取得するか"
+      required: false
+      schema:
+        $ref: "#/components/schemas/offset"
+    limit:
+      name: limit
+      in: query
+      description: "paging limit: 何件取得するか"
+      required: false
+      schema:
+        $ref: "#/components/schemas/limit"
+  schemas:
+    offset:
+      type: integer
+      example: 0
+      default: 0
+    limit:
+      type: integer
+      example: 20
+      default: 20
+      maximum: 100
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 400
+          description: HTTPステータスコード
+        message:
+          type: string
+          example: "error message"
+          description: エラーメッセージ本文
+      required:
+        - code
+        - message
+    uuid:
+      type: string
+      pattern: '^\d{8}-\d{4}-\d{4}-\d{4}-\d{12}$'
+      example: "ebe93138-d132-f65c-d12c-f52935027f9a"
+    employeeId:
+      type: string
+      minLength: 1
+      maxLength: 50
+      example: "popy123"
+    userName:
+      type: string
+      minLength: 1
+      maxLength: 50
+      example: "山田 太郎"
+    kana:
+      type: string
+      minLength: 1
+      maxLength: 50
+      example: "やまだ たろう"
+    mail:
+      type: string
+      format: email
+      example: "popy123@example.com"
+    date:
+      type: string
+      format: date
+      example: "2001-04-01"
+    departmentName:
+      type: string
+      minLength: 1
+      maxLength: 50
+      example: "営業1"
+    roleName:
+      type: string
+      minLength: 1
+      maxLength: 50
+      example: "一般"
+    officeName:
+      type: string
+      minLength: 1
+      maxLength: 50
+      example: "東京"
+    skillName:
+      type: string
+      minLength: 1
+      maxLength: 50
+      example: "簿記2級"
+    goal:
+      type: string
+      minLength: 1
+      maxLength: 1024
+      example: "売上前年比150%達成"
+    fileName:
+      type: string
+      minLength: 1
+      maxLength: 120
+      example: "example.png"
+    data:
+      type: string
+      format: byte
+      example: "U3dhZ2dlciByb2Nrcw=="
+    matchGroupStatus:
+      type: string
+      enum:
+        - open
+        - close
+      description: |
+        - open: マッチグループが開いている状態 (デフォルト値)
+        - close: マッチグループが閉じている状態 (削除されていないため参照可能だが、編集は不可であり再オープンもできない)
+    matchGroupName:
+      type: string
+      minLength: 1
+      maxLength: 50
+      example: "雑談グループ"
+    matchGroupDescription:
+      type: string
+      minLength: 0
+      maxLength: 120
+      example: "マッチグループの説明"
+    LoginInfo:
+      type: object
+      properties:
+        mail:
+          $ref: "#/components/schemas/mail"
+        password:
+          type: string
+          description: パスワード (平文)
+          example: "password"
+      required:
+        - mail
+        - password
+    Session:
+      type: object
+      properties:
+        sessionId:
+          $ref: "#/components/schemas/uuid"
+        createdAt:
+          $ref: "#/components/schemas/date"
+        userId:
+          $ref: "#/components/schemas/uuid"
+      required:
+        - sessionId
+        - createdAt
+        - userId
+    User:
+      type: object
+      properties:
+        userId:
+          $ref: "#/components/schemas/uuid"
+        userName:
+          $ref: "#/components/schemas/userName"
+        userIcon:
+          $ref: "#/components/schemas/FileInfo"
+        officeName:
+          $ref: "#/components/schemas/officeName"
+      required:
+        - userId
+        - userName
+        - userIcon
+        - officeName
+    FileInfo:
+      type: object
+      properties:
+        fileId:
+          $ref: "#/components/schemas/uuid"
+        fileName:
+          $ref: "#/components/schemas/fileName"
+      required:
+        - fileId
+        - fileName
+    FileData:
+      type: object
+      properties:
+        fileName:
+          $ref: "#/components/schemas/fileName"
+        data:
+          $ref: "#/components/schemas/data"
+      required:
+        - fileName
+        - data
+    MatchGroup:
+      type: object
+      properties:
+        matchGroupId:
+          $ref: "#/components/schemas/uuid"
+        matchGroupName:
+          $ref: "#/components/schemas/matchGroupName"
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        status:
+          $ref: "#/components/schemas/matchGroupStatus"
+        createdBy:
+          $ref: "#/components/schemas/uuid"
+        createdAt:
+          $ref: "#/components/schemas/date"
+      required:
+        - matchGroupId
+        - matchGroupName
+        - members
+        - status
+        - createdBy
+        - createdAt
+    MatchGroupForCreate:
+      type: object
+      properties:
+        matchGroupName:
+          $ref: "#/components/schemas/matchGroupName"
+        description:
+          $ref: "#/components/schemas/matchGroupDescription"
+        numOfMembers:
+          type: integer
+          minimum: 2
+          maximum: 8
+          example: 4
+        departmentFilter:
+          type: string
+          enum:
+            - onlyMyDepartment
+            - excludeMyDepartMent
+            - none
+          description: |
+            - onlyMyDepartment: ログインユーザーが所属している部署のユーザーのみ対象
+            - excludeMyDepartMent: ログインユーザーが所属している部署以外のユーザーが対象
+            - none: どの部署のユーザーも対象
+        officeFilter:
+          type: string
+          enum:
+            - onlyMyOffice
+            - excludeMyOffice
+            - none
+          description: |
+            - onlyMyOffice: ログインユーザーが所属している拠点のユーザーのみ対象
+            - excludeMyOffice: ログインユーザーが所属している拠点以外のユーザーが対象
+            - none: どの拠点のユーザーも対象
+        skillFilter:
+          type: array
+          description: 指定したスキル名の一覧でフィルタ (複数のスキル名を指定したときは、いずれかのスキルを持つユーザーが対象)
+          items:
+            $ref: "#/components/schemas/skillName"
+        neverMatchedFilter:
+          type: boolean
+          description: 過去にマッチングしたことが無いユーザーのみが対象
+      required:
+        - matchGroupName
+        - description
+        - numOfMembers
+        - departmentFilter
+        - officeFilter
+        - skillFilter
+        - neverMatchedFilter
+    MatchGroupDetail:
+      type: object
+      properties:
+        matchGroupId:
+          $ref: "#/components/schemas/uuid"
+        matchGroupName:
+          $ref: "#/components/schemas/matchGroupName"
+        description:
+          $ref: "#/components/schemas/matchGroupDescription"
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        status:
+          $ref: "#/components/schemas/matchGroupStatus"
+        createdBy:
+          $ref: "#/components/schemas/uuid"
+        createdAt:
+          $ref: "#/components/schemas/date"
+      required:
+        - matchGroupId
+        - matchGroupName
+        - description
+        - members
+        - status
+        - createdBy
+        - createdAt
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: "SESSION_ID"
+security:
+  - cookieAuth: []
+tags:
+  - name: users
+    description: ユーザー機能に関するAPI
+  - name: match-groups
+    description: グループマッチング機能に関するAPI

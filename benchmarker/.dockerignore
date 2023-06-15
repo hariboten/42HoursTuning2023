@@ -1,0 +1,9 @@
+node_modules
+dist
+logs
+score
+.dockerignore
+.eslintrc.json
+Dockerfile*
+*.sh
+

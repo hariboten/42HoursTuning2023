@@ -1,0 +1,11 @@
+{
+  "name": {
+    "value": "__resourceName__"
+  },
+  "adminUsername": {
+    "value": "__adminUserName__"
+  },
+  "adminPublicKey": {
+    "value": "__adminPublicKey__"
+  }
+}

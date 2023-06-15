@@ -1,0 +1,7 @@
+node_modules
+dist
+.dockerignore
+.eslintrc.json
+jest.config.js
+**/*test.ts
+Dockerfile*

@@ -1,0 +1,13 @@
+FROM node:20.0.0 AS builder
+WORKDIR /e2e
+COPY . .
+RUN --mount=type=cache,target=/usr/local/share/.cache/yarn/v6 \ 
+yarn install --frozen-lockfile && yarn build
+
+FROM node:20.0.0 AS runner
+WORKDIR /e2e
+COPY --from=builder /e2e/dist ./dist
+COPY --from=builder /e2e/package* ./
+RUN --mount=type=cache,target=/usr/local/share/.cache/yarn/v6 \ 
+yarn install --production --frozen-lockfile
+CMD ["yarn", "test"]

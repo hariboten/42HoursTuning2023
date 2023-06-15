@@ -1,0 +1,31 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["import"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "env": {
+    "commonjs": true,
+    "node": true
+  },
+  "rules": {
+    // 実装した型にしてもらえれば十分であるため
+    "@typescript-eslint/explicit-module-boundary-types": 0,
+    // await忘れ対策
+    "require-await": "error",
+    // anyな型を受け取る関数が存在するため
+    "@typescript-eslint/no-explicit-any": 0,
+    // _始まりの変数は未使用でもいい
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "varsIgnorePattern": "^_",
+        "argsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_"
+      }
+    ]
+  }
+}

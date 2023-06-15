@@ -1,0 +1,11 @@
+load data local infile '/docker-entrypoint-initdb.d/csv/user_init.csv' into table user fields terminated by ',' lines terminated by '\n' IGNORE 1 LINES;
+load data local infile '/docker-entrypoint-initdb.d/csv/office_init.csv' into table office fields terminated by ',' lines terminated by '\n' IGNORE 1 LINES;
+load data local infile '/docker-entrypoint-initdb.d/csv/file_init.csv' into table file fields terminated by ',' lines terminated by '\n' IGNORE 1 LINES;
+load data local infile '/docker-entrypoint-initdb.d/csv/session_init.csv' into table session fields terminated by ',' lines terminated by '\n' IGNORE 1 LINES;
+load data local infile '/docker-entrypoint-initdb.d/csv/department_init.csv' into table department fields terminated by ',' lines terminated by '\n' IGNORE 1 LINES;
+load data local infile '/docker-entrypoint-initdb.d/csv/role_init.csv' into table role fields terminated by ',' lines terminated by '\n' IGNORE 1 LINES;
+load data local infile '/docker-entrypoint-initdb.d/csv/department_role_member_init.csv' into table department_role_member fields terminated by ',' lines terminated by '\n' IGNORE 1 LINES;
+load data local infile '/docker-entrypoint-initdb.d/csv/skill_init.csv' into table skill fields terminated by ',' lines terminated by '\n' IGNORE 1 LINES;
+load data local infile '/docker-entrypoint-initdb.d/csv/skill_member_init.csv' into table skill_member fields terminated by ',' lines terminated by '\n' IGNORE 1 LINES;
+load data local infile '/docker-entrypoint-initdb.d/csv/match_group_init.csv' into table match_group fields terminated by ',' lines terminated by '\n' IGNORE 1 LINES;
+load data local infile '/docker-entrypoint-initdb.d/csv/match_group_member_init.csv' into table match_group_member fields terminated by ',' lines terminated by '\n' IGNORE 1 LINES;

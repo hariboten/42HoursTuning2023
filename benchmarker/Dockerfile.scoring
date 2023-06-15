@@ -1,0 +1,9 @@
+FROM node:20.0.0 AS builder
+WORKDIR /scoring
+COPY . .
+RUN --mount=type=cache,target=/usr/local/share/.cache/yarn/v6 \ 
+yarn install --frozen-lockfile && yarn build
+
+FROM node:20-slim AS runner
+WORKDIR /scoring
+COPY --from=builder /scoring/dist ./dist
