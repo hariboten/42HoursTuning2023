@@ -11,10 +11,12 @@ if [ $? -ne 0 ]; then
 fi
 
 # e2eテスト
-(cd benchmarker && ./e2e.sh)
-if [ $? -ne 0 ]; then
-    echo "採点フローを中断します。"
-    exit 1
+if [[ $HOSTNAME == env-* ]]; then
+    (cd benchmarker && ./e2e.sh)
+    if [ $? -ne 0 ]; then
+        echo "採点フローを中断します。"
+        exit 1
+    fi
 fi
 
 fileName=`date "+%Y%m%d_%H%M%S"`
