@@ -8,7 +8,7 @@
 
 repoName="42HoursTuning2023"
 
-if [[ $HOSTNAME != env-* ]]; then
+if [[ $HOSTNAME != team-* ]]; then
   echo "ローカル環境ではこのスクリプトは利用できません。"
   exit 1
 fi
